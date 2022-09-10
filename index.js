@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
-require('dotenv').config()
+require("dotenv").config();
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const port = process.env.PORT || 5000;
@@ -12,28 +12,28 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 //AUTH
-app.post('/login', async(req,res)=>{
+app.post("/login", async (req, res) => {
   const user = req.body;
-  const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET,{
-    expiresIn:"1d"
-  })
-  res.send({accessToken})
-})
-function verifyJWT(req,res,next){
+  const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+    expiresIn: "1d",
+  });
+  res.send({ accessToken });
+});
+function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
-  console.log(authHeader)
-  if(!authHeader){
-    return res.status(401).send({message:"unauthorized access"})
+
+  if (!authHeader) {
+    return res.status(401).send({ message: "unauthorized access" });
   }
   const token = authHeader.split(" ")[1];
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET,(err, decoded)=>{
-    if(err){
-      return res.status(403).send({message:"FORBIDEN"})
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(403).send({ message: "FORBIDEN" });
     }
-    console.log("decoded",decoded)
+
     req.decoded = decoded;
-  })
-  next()
+  });
+  next();
 }
 
 //mongodb
@@ -84,18 +84,18 @@ async function run() {
       res.send(result);
     });
     //find orders
-    app.get("/orders",verifyJWT, async (req, res) => {
-     const decodedEmail = req.decoded.email;
-      const email = req.query.email;
-     if(email === decodedEmail){
-      const query = { email: email };
-      const cursor = orderCollection.find(query);
-      const result = await cursor.toArray();
-      res.send(result);
-     }
-     else{
-      res.status(403).send({message:"Forbidden"})
-     }
+    app.get("/orders", verifyJWT, async (req, res) => {
+      const decodedUid = req.decoded.uid;
+      const uid = req.query.uid;
+      if (uid === decodedUid) {
+        const query = { uid: uid };
+
+        const cursor = orderCollection.find(query);
+        const result = await cursor.toArray();
+        res.send(result);
+      } else {
+        res.status(403).send({ message: "Forbidden" });
+      }
     });
   } finally {
   }
